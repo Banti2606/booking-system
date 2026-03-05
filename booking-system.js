@@ -1,53 +1,48 @@
 const express = require("express");
-const redis = require("redis");
-
 const app = express();
+
 app.use(express.json());
-
-// connect redis
-const client = redis.createClient();
-
-client.on("error", (err) => {
-    console.log("Redis error:", err);
-});
-
-client.connect();
 
 // total tickets
 let tickets = 100;
 
+
+// homepage route
+app.get("/", (req, res) => {
+  res.send("Concurrent Ticket Booking API Running");
+});
+
+
 // booking API
-app.post("/api/book", async (req, res) => {
+app.post("/api/book", (req, res) => {
 
-    const lock = await client.set("lock", "locked", {
-        NX: true,
-        EX: 5
+  if (tickets <= 0) {
+    return res.json({
+      success: false,
+      message: "All tickets sold out"
     });
+  }
 
-    if (!lock) {
-        return res.status(409).json({
-            success: false,
-            message: "Another booking in progress"
-        });
-    }
+  tickets--;
 
-    if (tickets <= 0) {
-        return res.json({
-            success: false,
-            message: "Sold Out"
-        });
-    }
+  const bookingId = Date.now();
 
-    tickets--;
-
-    const bookingId = Date.now();
-
-    res.json({
-        success: true,
-        bookingId,
-        remaining: tickets
-    });
+  res.json({
+    success: true,
+    bookingId: bookingId,
+    remaining: tickets
+  });
 
 });
 
+
+// export for Vercel
 module.exports = app;
+
+
+// run locally
+if (require.main === module) {
+  app.listen(3000, () => {
+    console.log("Booking system running on port 3000");
+  });
+}

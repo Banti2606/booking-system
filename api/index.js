@@ -1,3 +1,3 @@
 const app = require("../booking-system");
 
-export default app;
+module.exports = app;
