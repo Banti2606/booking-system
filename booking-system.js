@@ -50,6 +50,4 @@ app.post("/api/book", async (req, res) => {
 
 });
 
-app.listen(3000, () => {
-    console.log("Booking system running on port 3000");
-});
+module.exports = app;
